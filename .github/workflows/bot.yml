@@ -2,8 +2,9 @@ name: Ticket Bot
 
 on:
   schedule:
-    - cron: "* * * * *"
+    - cron: "*/2 * * * *"   # cada 2 minutos (más estable)
   workflow_dispatch:
+  push:   # 🔥 ESTO ES CLAVE
 
 jobs:
   run-bot:
