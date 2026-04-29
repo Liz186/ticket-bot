@@ -22,12 +22,10 @@ URLS = {
     "Domingo 10": "https://www.ticketmaster.com.mx/bts-world-tour-arirang-in-mexico-ciudad-de-mexico-10-05-2026/event/1400642AA32D84D7",
 }
 
-# Ajustes de alerta
 MOVE_REPEAT = 2
 TICKET_REPEAT = 3
 ALERT_SLEEP_SECONDS = 2
 
-# Phrases que suelen indicar que no hay boletos
 NO_TICKET_PHRASES = [
     "no tickets available",
     "currently no tickets available",
@@ -37,7 +35,6 @@ NO_TICKET_PHRASES = [
     "no availability",
 ]
 
-# CTA más confiables para Ticketmaster / eventos similares
 TICKET_CTA_SELECTORS = [
     "button:has-text('Buy Tickets')",
     "button:has-text('Get Tickets')",
@@ -149,14 +146,12 @@ def collect_signals(page) -> Tuple[str, str, Dict[str, Any]]:
 
     cta_count = visible_count(page, TICKET_CTA_SELECTORS)
 
-    # Circulitos / seats visibles del mapa
     seat_count = 0
     try:
         seat_count = page.locator("svg circle[fill]:visible").count()
     except Exception:
         seat_count = 0
 
-    # Score conservador para reducir falsos positivos
     ticket_score = 0
     if cta_count > 0:
         ticket_score += 2
@@ -176,7 +171,6 @@ def collect_signals(page) -> Tuple[str, str, Dict[str, Any]]:
     else:
         status = "OTRO"
 
-    # Firma enfocada en elementos útiles para movimiento real
     signal_blob = json.dumps(
         {
             "title": title,
@@ -241,13 +235,11 @@ def main() -> None:
 
                 changed = prev_signature is not None and prev_signature != signature
 
-                # screenshot solo si importa
                 sc_path = None
                 if changed or status == "BOLETOS":
                     sc_path = screenshot_name(nombre)
                     page.screenshot(path=sc_path, full_page=False)
 
-                # MOVIMIENTO: cambio de firma respecto a la ejecución anterior
                 if changed:
                     send_discord(
                         f"🟡 MOVIMIENTO DETECTADO\n"
@@ -258,7 +250,6 @@ def main() -> None:
                         repeat=MOVE_REPEAT,
                     )
 
-                # BOLETOS: alerta fuerte
                 if status == "BOLETOS":
                     send_discord(
                         f"🚨🚨 BOLETOS DISPONIBLES 🚨🚨\n"
@@ -270,7 +261,6 @@ def main() -> None:
                         repeat=TICKET_REPEAT,
                     )
 
-                # SIN: solo cuando cambia de estado
                 elif prev_status is not None and prev_status != status:
                     send_discord(
                         f"🔴 SIN BOLETOS\n"
